@@ -1,8 +1,6 @@
 /*
 	Four Function Calculator
 
-
-
 	strobe is used to enter a new token
 	tokens are BCD 0 through 9, plus
 		A : + (addition)
