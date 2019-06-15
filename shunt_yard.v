@@ -17,8 +17,8 @@
 
 	By far, the most complicated part of this module is the logic to pop the
 	function stack to the output queue. Addition and subtraction are lowest
-	precedence, and will pop everything off the stack.  Multiplication and
-	division will only pop off other multiplication and division operators,
+	precedence, and will pop all other operators off the stack.  Multiplication
+	and division will only pop off other multiplication and division operators,
 	stopping at the first addition or subtraction encountered.  The euquals
 	operator is special.  It will pop everything off the stack and then be
 	pushed directly to the output queue.
@@ -27,11 +27,11 @@
 module ShuntingYard (
 
 	input clk,					// clock
-	input rd_en,				// active-high synchrounous read enable
-	input wr_en,				// active-high synchronous write enable
+	input rd_en,				// active-high, synchrounous read enable
+	input wr_en,				// active-high, synchronous write enable
 	input [3:0] token,			// infix expression input
 
-	output ready,				// active-high ready to accept next token
+	output ready,				// active-high, ready to accept next token
 	output [3:0] output_queue	// postfix expression output
 );
 
@@ -44,9 +44,9 @@ module ShuntingYard (
 	parameter token_CLR	= 4'hF;
 
 	// shunting yard states
-	parameter fsm_IDLE			= 3'd0; // waiting for token
-	parameter fsm_PUSH_NUMBER	= 3'd1; // push numbers into output queue
-	parameter fsm_OPERATOR		= 3'd2; // check operator precedence
+	parameter fsm_IDLE			= 3'd0;	// waiting for token
+	parameter fsm_PUSH_NUMBER	= 3'd1;	// push numbers into output queue
+	parameter fsm_OPERATOR		= 3'd2;	// check operator precedence
 	parameter fsm_PUSH_FUNCTION	= 3'd3; // push function onto stack
 	parameter fsm_POP_FUNCTION  = 3'd4; // pop function from stack to output queue
 
@@ -72,22 +72,26 @@ module ShuntingYard (
 	// next state logic
 	always @* begin
 	  case (state)
-		// idle, wait for a token and parse
-		fsm_IDLE  : if (wr_en) next_state = is_number ? fsm_PUSH_NUMBER : fsm_OPERATOR;
-					else next_state = fsm_IDLE;
+			// idle, wait for a token and parse
+			fsm_IDLE  :
+				if (wr_en) next_state = is_number ? fsm_PUSH_NUMBER : fsm_OPERATOR;
+				else next_state = fsm_IDLE;
 
-		// push number into output queue
-		fsm_PUSH_NUMBER : next_state = fsm_IDLE;
+			// push number into output queue
+			fsm_PUSH_NUMBER :
+				next_state = fsm_IDLE;
 
-		// push function onto stack
-		// first check operator precedence, if the function on the stack is higher or equal precedence then pop it to the output queue
-		// the '=' operator wil pop everything off the stack and then be pushed to the output queue
-		fsm_OPERATOR : if (pop) next_state = fsm_POP_FUNCTION;
-					   else next_state = is_equal ? fsm_PUSH_NUMBER : fsm_PUSH_FUNCTION; // push the '=' directly to the output queue
-		fsm_POP_FUNCTION : next_state = fsm_OPERATOR; // pop function from stack to output queue
-		fsm_PUSH_FUNCTION : next_state = fsm_IDLE; // push function onto stack
+			// push function onto stack
+			// first check operator precedence, if the function on the stack is higher or equal precedence then pop it to the output queue
+			// the '=' operator wil pop everything off the stack and then be pushed to the output queue
+			fsm_OPERATOR :
+				if (pop) next_state = fsm_POP_FUNCTION;
+				else next_state = is_equal ? fsm_PUSH_NUMBER : fsm_PUSH_FUNCTION; // push the '=' directly to the output queue
 
-		default: next_state = fsm_IDLE;
+			fsm_POP_FUNCTION : next_state = fsm_OPERATOR; // pop function from stack to output queue
+			fsm_PUSH_FUNCTION : next_state = fsm_IDLE; // push function onto stack
+
+			default: next_state = fsm_IDLE;
 	  endcase
 	end
 
