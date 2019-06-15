@@ -1,4 +1,4 @@
-/*
+/* 
 	Shunting Yard Parser
 
 	Outputs an RPN (postfix notation) expression from an infix input.
