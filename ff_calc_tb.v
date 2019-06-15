@@ -2,7 +2,7 @@
 
 module ffCalc_tb;
 
-	// Inputs
+	// Inputs 
 	reg clk;
 	reg strobe;
 	reg [3:0] token;
